@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Native launch screen: solid brand black. The animated logo is drawn by
+     Flutter (SkillSwapSplashScreen), so nothing is placed here to avoid a
+     jump between the native and the Flutter frames. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/splash_background" />
+</layer-list>

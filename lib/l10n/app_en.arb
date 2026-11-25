@@ -1,0 +1,749 @@
+{
+  "@@locale": "en",
+  "appTitle": "Skill Swap",
+  "authTagline": "Teach what you know. Learn what you love.",
+  "signInTitle": "Welcome back",
+  "signUpTitle": "Create your account",
+  "emailLabel": "Email",
+  "passwordLabel": "Password",
+  "signInAction": "Sign in",
+  "signUpAction": "Create account",
+  "newHerePrompt": "New here?",
+  "@newHerePrompt": {
+    "description": "Text before the create-account link on the sign-in screen."
+  },
+  "haveAccountPrompt": "Already have an account?",
+  "forgotPassword": "Forgot my password",
+  "orSeparator": "or",
+  "@orSeparator": {
+    "description": "Divider label between email sign-in and social sign-in."
+  },
+  "continueWithGoogle": "Continue with Google",
+  "continueWithApple": "Continue with Apple",
+  "socialSignInSoon": "This sign-in option is coming soon. For now, use email and password.",
+  "resetPasswordTitle": "Reset password",
+  "resetPasswordBody": "Enter your email and we will send you a link to choose a new password.",
+  "resetPasswordSent": "If an account exists for that email, the link is on its way.",
+  "@resetPasswordSent": {
+    "description": "Shown after a reset request. Must not reveal whether the account exists."
+  },
+  "showPassword": "Show password",
+  "hidePassword": "Hide password",
+  "validationEmail": "Enter a valid email",
+  "validationPassword": "Use at least 6 characters",
+  "validationRequired": "Required field",
+  "validationPickSkill": "Pick at least one skill",
+  "errorTitle": "Something went wrong",
+  "errorInvalidCredentials": "Incorrect email or password.",
+  "errorEmailInUse": "This email is already registered.",
+  "errorWeakPassword": "Choose a stronger password.",
+  "errorNetwork": "No connection. Check your internet and try again.",
+  "errorTooManyRequests": "Too many attempts. Wait a few minutes and try again.",
+  "errorPermission": "You don't have permission for this action.",
+  "errorInvalidImage": "This image can't be used. Try another photo.",
+  "errorUnknown": "Something went wrong. Please try again.",
+  "retryAction": "Try again",
+  "profileSetupTitle": "Set up your profile",
+  "profileSetupSubtitle": "Tell people what you can teach and what you want to learn.",
+  "editProfileTitle": "Edit profile",
+  "nameLabel": "Name",
+  "bioLabel": "About you",
+  "bioHint": "A short intro, availability, preferred format…",
+  "photoAddAction": "Add photo",
+  "photoChangeAction": "Change photo",
+  "photoRemoveAction": "Remove photo",
+  "photoProcessing": "Preparing photo…",
+  "photoHint": "Optional. A square crop of your photo; location data is removed.",
+  "teachSectionTitle": "I can teach",
+  "learnSectionTitle": "I want to learn",
+  "saveAction": "Save",
+  "profileSaved": "Profile saved",
+  "navDiscover": "Match",
+  "navMatches": "Chats",
+  "navProfile": "Profile",
+  "discoverEmptyTitle": "No one new for now",
+  "discoverEmptyBody": "Add more skills to your profile or come back later.",
+  "refreshAction": "Refresh",
+  "likeAction": "Interested",
+  "passAction": "Skip",
+  "teachesLabel": "Teaches",
+  "wantsLabel": "Wants to learn",
+  "compatibility": "{percent}% match",
+  "@compatibility": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "matchDialogTitle": "It's a match!",
+  "matchDialogBody": "You and {name} can start chatting now.",
+  "@matchDialogBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "openChatAction": "Send message",
+  "keepExploringAction": "Keep exploring",
+  "matchesEmptyTitle": "No matches yet",
+  "matchesEmptyBody": "Show interest in profiles on Discover. When it's mutual, they show up here.",
+  "matchesNoMessages": "Say hi to start the exchange",
+  "chatHint": "Message",
+  "sendAction": "Send",
+  "chatEmpty": "Agree on topics, format and a time that works for both of you.",
+  "signOutAction": "Sign out",
+  "editProfileAction": "Edit profile",
+  "skillExcel": "Excel",
+  "skillEnglish": "English",
+  "skillSpanish": "Spanish",
+  "skillProgramming": "Programming",
+  "skillPython": "Python",
+  "skillGuitar": "Guitar",
+  "skillPiano": "Piano",
+  "skillMath": "Math",
+  "skillPhysics": "Physics",
+  "skillChemistry": "Chemistry",
+  "skillPhotoEditing": "Photo editing",
+  "skillVideoEditing": "Video editing",
+  "skillCooking": "Cooking",
+  "skillCrafts": "Crafts",
+  "skillDrawing": "Drawing",
+  "skillWriting": "Writing",
+  "skillPublicSpeaking": "Public speaking",
+  "skillPhotography": "Photography",
+  "skillDesign": "Design",
+  "skillMarketing": "Marketing",
+  "moreOptions": "More options",
+  "cancelAction": "Cancel",
+  "unmatchAction": "Undo match",
+  "unmatchConfirmTitle": "Undo this match?",
+  "unmatchConfirmBody": "The conversation will be closed for both of you. This can't be undone.",
+  "matchClosedDone": "Match undone",
+  "blockAction": "Block",
+  "blockConfirmTitle": "Block {name}?",
+  "@blockConfirmTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "blockConfirmBody": "You won't match again and no more messages can be sent. This can't be undone.",
+  "blockDone": "Profile blocked",
+  "reportAction": "Report",
+  "reportProfileTooltip": "Report profile",
+  "reportTitle": "Report {name}",
+  "@reportTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reportIntro": "Your report is confidential. The profile will also be blocked for you.",
+  "reportReasonHarassment": "Harassment or threats",
+  "reportReasonSpam": "Spam",
+  "reportReasonInappropriate": "Inappropriate content",
+  "reportReasonFake": "Fake profile",
+  "reportReasonOther": "Something else",
+  "reportDetailsLabel": "Details (optional)",
+  "reportPickReason": "Choose a reason",
+  "reportSubmitAction": "Report and block",
+  "reportDone": "Report sent. Thanks for helping keep the community safe.",
+  "chatClosedNotice": "This conversation has ended.",
+  "consentTitle": "Before you continue",
+  "consentBody": "Skill Swap connects people who want to exchange knowledge. To keep everyone safe, all members must be adults and follow the community rules.",
+  "consentCheckbox": "I am 18 or older and accept the Terms and Community rules",
+  "consentRequired": "Accept to continue",
+  "continueAction": "Continue",
+  "readTermsAction": "Read the terms",
+  "termsTitle": "Terms and community rules",
+  "termsBody": "• You must be 18 or older.\n• Treat everyone with respect: harassment, threats, hate speech and sexual content are not allowed.\n• Use your real name and describe your skills honestly.\n• No spam, scams or hidden charges.\n• Don't share other people's personal data.\n• Prefer public places or video calls for your sessions.\n\nYou can undo a match, block or report anyone from the chat menu or the profile card. Reports are confidential and reviewed by the project team; breaking these rules can lead to account removal.\n\nThis is a summary written for an academic project and is not a legally reviewed agreement.",
+  "matchTitle": "Match",
+  "notificationsSoon": "Notifications (coming soon)",
+  "openProfile": "Your profile",
+  "undoAction": "Undo last skip",
+  "saveForLaterSoon": "Save for later (coming soon)",
+  "knowledgeMatchTitle": "Knowledge match",
+  "knowledgeExchange": "You teach {teach} and learn {learn} with {name}.",
+  "@knowledgeExchange": {
+    "placeholders": {
+      "teach": {
+        "type": "String"
+      },
+      "learn": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "knowledgeTeach": "You know {skill} and {name} wants to learn it!",
+  "@knowledgeTeach": {
+    "placeholders": {
+      "skill": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "knowledgeLearn": "{name} knows {skill}, which you want to learn!",
+  "@knowledgeLearn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "skill": {
+        "type": "String"
+      }
+    }
+  },
+  "skillPair": "{first} and {second}",
+  "@skillPair": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      }
+    }
+  },
+  "profileCardLabel": "Profile of {name}",
+  "@profileCardLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "navMySkills": "My Skills",
+  "goalLabel": "Goal",
+  "goalLearn": "Learn {skill}",
+  "@goalLearn": {
+    "placeholders": {
+      "skill": {
+        "type": "String"
+      }
+    }
+  },
+  "compatibilityLabel": "Affinity",
+  "profileDetailsAction": "View profile details",
+  "newMatchesBadge": "{count, plural, =1{1 match with no messages yet} other{{count} matches with no messages yet}}",
+  "@newMatchesBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "navCommunity": "Community",
+  "communityTitle": "Community",
+  "communitySubtitle": "Share, learn and inspire.",
+  "searchAction": "Search",
+  "newPostAction": "New post",
+  "notificationsTitle": "Notifications",
+  "unreadBadge": "{count, plural, =1{1 unread} other{{count} unread}}",
+  "@unreadBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "feedForYou": "For you",
+  "feedFollowing": "Following",
+  "feedSkills": "Skills",
+  "feedProjects": "Projects",
+  "feedEmptyTitle": "No posts yet",
+  "feedEmptyBody": "Be the first to share a project, a tip or a question.",
+  "feedFollowingEmptyTitle": "Nothing from people you follow",
+  "feedFollowingEmptyBody": "Follow members to see their posts here.",
+  "feedSkillsEmptyTitle": "No posts about your skills",
+  "feedSkillsEmptyBody": "Posts about the skills you teach or want to learn appear here.",
+  "feedProjectsEmptyTitle": "No projects yet",
+  "feedProjectsEmptyBody": "Show what you built: post a project.",
+  "searchPeopleAction": "Find people",
+  "feedEnd": "You're all caught up",
+  "loadMoreFailed": "Couldn't load more. Tap to try again",
+  "loadMoreAction": "Load more",
+  "loadingPosts": "Loading posts",
+  "timeNow": "now",
+  "timeMinutes": "{n} min ago",
+  "@timeMinutes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timeHours": "{n} h ago",
+  "@timeHours": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "timeDays": "{n} d ago",
+  "@timeDays": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "postTypeProject": "Project",
+  "postTypeTip": "Tip",
+  "postTypeQuestion": "Question",
+  "postTypeAchievement": "Achievement",
+  "postTypeWork": "Work",
+  "hashtagSemantics": "Hashtag {tag}",
+  "@hashtagSemantics": {
+    "placeholders": {
+      "tag": {
+        "type": "String"
+      }
+    }
+  },
+  "memberFallbackName": "Member",
+  "teachesSkill": "Teaches {skill}",
+  "@teachesSkill": {
+    "placeholders": {
+      "skill": {
+        "type": "String"
+      }
+    }
+  },
+  "openMemberProfile": "Open {name}'s profile",
+  "@openMemberProfile": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "postEdited": "edited",
+  "postMenuTooltip": "Post options",
+  "readMore": "Read more",
+  "postImageSemantics": "Image {index} of {total}",
+  "@postImageSemantics": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "imageLoadFailed": "Tap to retry",
+  "learnPanelTitle": "Skill available to teach",
+  "learnPanelBody": "{name} can teach {skills}.",
+  "@learnPanelBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "skills": {
+        "type": "String"
+      }
+    }
+  },
+  "learnWithAction": "I want to learn with {name}",
+  "@learnWithAction": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "learnPending": "Interest sent · waiting for an answer",
+  "learnConfirmTitle": "Learn with {name}?",
+  "@learnConfirmTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "learnConfirmBody": "This sends your interest through Match, like a swipe right. {name} will be notified that you want to learn from this post. If {name} is also interested in you, you match and the chat opens.",
+  "@learnConfirmBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "learnConfirmAction": "Send interest",
+  "learnSent": "Interest sent to {name}. You will match if the interest is mutual.",
+  "@learnSent": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commentAction": "Comment",
+  "commentsCount": "{count, plural, =0{no comments} =1{1 comment} other{{count} comments}}",
+  "@commentsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "likesCount": "{count, plural, =0{no likes} =1{1 like} other{{count} likes}}",
+  "@likesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "likePostAction": "Like",
+  "unlikeAction": "Unlike",
+  "shareAction": "Share",
+  "unsaveAction": "Remove from saved",
+  "postSaved": "Saved",
+  "postUnsaved": "Removed from saved",
+  "editPostAction": "Edit post",
+  "deletePostAction": "Delete post",
+  "deletePostTitle": "Delete this post?",
+  "deletePostBody": "The post and its images are removed for everyone. This cannot be undone.",
+  "postDeleted": "Post deleted",
+  "copyLinkAction": "Copy link",
+  "linkCopied": "Link copied",
+  "reportPostAction": "Report post",
+  "reportCommentAction": "Report comment",
+  "reportMemberAction": "Report member",
+  "blockMemberAction": "Block {name}",
+  "@blockMemberAction": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "communityBlockBody": "You won't see {name}'s posts or comments, they can't interact with your content, and you won't match. This cannot be undone.",
+  "@communityBlockBody": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "reportPostTitle": "Report post",
+  "reportCommentTitle": "Report comment",
+  "contentReportIntro": "Your report is confidential and will be reviewed by the moderators.",
+  "contentReportDone": "Report sent. Thank you for keeping the community safe.",
+  "reportReasonOffensive": "Offensive content",
+  "reportReasonScam": "Scam",
+  "sendInChat": "Send in a chat",
+  "shareNoChats": "You have no open chats yet. Copy the link instead.",
+  "sharePostTitle": "Send to {name}?",
+  "@sharePostTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "sharePostBody": "A message with the link to this post will be sent in your chat.",
+  "sharedPostMessage": "Check out this post on Skill Swap: {link}",
+  "@sharedPostMessage": {
+    "placeholders": {
+      "link": {
+        "type": "String"
+      }
+    }
+  },
+  "postSharedTo": "Sent to {name}",
+  "@postSharedTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "openSharedPost": "Open post",
+  "postTitle": "Post",
+  "commentsTitle": "Comments",
+  "commentsEmpty": "No comments yet. Start the conversation!",
+  "loadMoreComments": "Load more comments",
+  "showReplies": "Show replies",
+  "hideReplies": "Hide replies",
+  "replyAction": "Reply",
+  "replyingTo": "Replying to {name}",
+  "@replyingTo": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commentHint": "Add a comment…",
+  "commentMenuTooltip": "Comment options",
+  "commentTooFast": "Wait a moment before commenting again.",
+  "deleteCommentAction": "Delete comment",
+  "commentDeleted": "Comment deleted",
+  "postNotFoundTitle": "Post unavailable",
+  "postNotFoundBody": "It may have been deleted, or the link is wrong.",
+  "backToCommunity": "Back to Community",
+  "newPostTitle": "New post",
+  "editPostTitle": "Edit post",
+  "previewAction": "Preview",
+  "previewTitle": "Preview",
+  "addImagesAction": "Add images",
+  "removeImageAction": "Remove image",
+  "imagesHint": "Up to {max} images. We resize them and remove location data.",
+  "@imagesHint": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "imagePickFailed": "Couldn't open your photos.",
+  "imagesSkipped": "{count, plural, =1{1 image could not be used} other{{count} images could not be used}}",
+  "@imagesSkipped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "editImagesLocked": "Images cannot be changed after publishing. To change them, delete the post and publish again.",
+  "postDescriptionLabel": "Description",
+  "postDescriptionHint": "Tell us about your project, tip or question…",
+  "postTypeLabel": "Type",
+  "postSkillsLabel": "Related skills ({count}/{max})",
+  "@postSkillsLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "postSkillsHint": "From your profile. Skills you teach show the \"learn with you\" button.",
+  "postSkillsMax": "Choose up to {max} skills.",
+  "@postSkillsMax": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "postTagsLabel": "Hashtags",
+  "postTagsHint": "#design #ui",
+  "postTagsHelper": "{count}/{max} valid tags (letters, numbers, _)",
+  "@postTagsHelper": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "visibilityLabel": "Who can see it?",
+  "visibilityPublic": "Public",
+  "visibilityPublicBody": "All Skill Swap members.",
+  "publishAction": "Publish",
+  "saveChangesAction": "Save changes",
+  "preparingImages": "Preparing images {done}/{total}…",
+  "@preparingImages": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "sendingPost": "Sending…",
+  "postEmptyError": "Write something or add an image.",
+  "postTooLongError": "The description is too long.",
+  "postTooFast": "Wait {seconds} s before publishing again.",
+  "@postTooFast": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "postPublished": "Post published",
+  "postUpdated": "Post updated",
+  "discardPostTitle": "Discard post?",
+  "discardPostBody": "What you wrote will be lost.",
+  "keepEditingAction": "Keep editing",
+  "discardAction": "Discard",
+  "errorInvalidPost": "Check the post: it is empty or too long.",
+  "memberMenuTooltip": "More options",
+  "memberBlockedTitle": "You blocked {name}",
+  "@memberBlockedTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "memberBlockedBody": "Their content is hidden for you.",
+  "memberNotFound": "Member not found",
+  "portfolioTitle": "Posts and portfolio",
+  "portfolioEmpty": "No posts yet.",
+  "portfolioEmptyMine": "Your posts appear here. Share your first project!",
+  "statPosts": "Posts",
+  "statFollowers": "Followers",
+  "statFollowing": "Following",
+  "followAction": "Follow",
+  "followingAction": "Following",
+  "messageAction": "Message",
+  "openPostSemantics": "Open post: {text}",
+  "@openPostSemantics": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "followersEmpty": "No followers yet",
+  "followingEmpty": "Not following anyone yet",
+  "myPortfolioAction": "My posts",
+  "savedTitle": "Saved",
+  "savedEmptyTitle": "Nothing saved yet",
+  "savedEmptyBody": "Tap the bookmark on a post to keep it here. Only you see this list.",
+  "searchHint": "Search people, posts or #tags",
+  "searchPeople": "People",
+  "searchPosts": "Posts",
+  "searchSkills": "Skills",
+  "searchPeopleHint": "Type at least 2 letters of a name.",
+  "searchNoPeople": "No one found for \"{term}\"",
+  "@searchNoPeople": {
+    "placeholders": {
+      "term": {
+        "type": "String"
+      }
+    }
+  },
+  "searchPeopleLimit": "The search matches the beginning of the name.",
+  "searchPostsHint": "Search a word or a #tag.",
+  "searchNoPosts": "No posts with \"{term}\"",
+  "@searchNoPosts": {
+    "placeholders": {
+      "term": {
+        "type": "String"
+      }
+    }
+  },
+  "searchPostsLimit": "The search uses one word or tag at a time.",
+  "searchSkillsHint": "Choose a skill to see who teaches it and related posts.",
+  "skillTeachersTitle": "Who teaches {skill}",
+  "@skillTeachersTitle": {
+    "placeholders": {
+      "skill": {
+        "type": "String"
+      }
+    }
+  },
+  "skillTeachersEmpty": "No one teaches this skill yet.",
+  "skillPostsTitle": "Posts about {skill}",
+  "@skillPostsTitle": {
+    "placeholders": {
+      "skill": {
+        "type": "String"
+      }
+    }
+  },
+  "skillPostsEmpty": "No posts about this skill yet.",
+  "notificationsEmptyTitle": "No notifications",
+  "notificationsEmptyBody": "Likes, comments, follows and learning requests appear here.",
+  "markAllReadAction": "Mark all read",
+  "unreadLabel": "unread",
+  "notificationLike": "{name} liked your post",
+  "@notificationLike": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationComment": "{name} commented on your post",
+  "@notificationComment": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationReply": "{name} replied to your comment",
+  "@notificationReply": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationFollow": "{name} started following you",
+  "@notificationFollow": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notificationLearn": "{name} wants to learn with you",
+  "@notificationLearn": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "contentReportSubmit": "Send report",
+  "deleteNotificationAction": "Delete notification",
+  "postTypeKnowledge": "Knowledge",
+  "errorInvalidVideo": "Use an MP4 video of up to 60 seconds and 2.3 MB.",
+  "addVideoAction": "Add video",
+  "removeVideoAction": "Remove video",
+  "videoHint": "Or 1 video of up to 60 s (MP4, up to 2.3 MB).",
+  "videoPickFailed": "Could not open your videos.",
+  "preparingVideo": "Preparing the video…",
+  "playVideoAction": "Play video",
+  "pauseVideoAction": "Pause video",
+  "replayVideoAction": "Watch again",
+  "fullscreenAction": "Full screen",
+  "exitFullscreenAction": "Exit full screen",
+  "muteAction": "Mute",
+  "unmuteAction": "Unmute",
+  "videoLoadFailed": "Could not load the video.",
+  "postVideoSemantics": "Video, {duration}",
+  "@postVideoSemantics": {
+    "placeholders": {
+      "duration": {
+        "type": "String"
+      }
+    }
+  },
+  "videoSelectedHint": "Video of up to 60 s. Location data is removed.",
+  "videoLoading": "Loading the video…",
+  "videoLabel": "Video",
+  "videoTooFast": "You can post another video in {minutes} min.",
+  "@videoTooFast": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  }
+}

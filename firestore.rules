@@ -1,0 +1,707 @@
+rules_version = '2';
+
+// Authorization for Skill Swap. Everything not matched below is denied.
+// Tests: firestore_rules_test/ (run against the Firestore Emulator).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- helpers ----------
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isUser(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // Absolute document path from a relative one, e.g. docPath('users/' + uid).
+    function docPath(relative) {
+      return path('/databases/' + database + '/documents/' + relative);
+    }
+
+    // Must match Skills.all in lib/features/profile/skills.dart.
+    function skillIds() {
+      return ['excel', 'english', 'spanish', 'programming', 'python', 'guitar',
+              'piano', 'math', 'physics', 'chemistry', 'photoEditing',
+              'videoEditing', 'cooking', 'crafts', 'drawing', 'writing',
+              'publicSpeaking', 'photography', 'design', 'marketing'];
+    }
+
+    function validSkills(value) {
+      return value is list && value.size() <= 20 && value.hasOnly(skillIds());
+    }
+
+    function hasExactly(data, keys) {
+      return data.keys().hasOnly(keys) && data.keys().hasAll(keys);
+    }
+
+    function liked(fromUid, toUid) {
+      let likePath = docPath('likes/' + fromUid + '_' + toUid);
+      return exists(likePath) && get(likePath).data.liked == true;
+    }
+
+    // Match ids are "<uidA>_<uidB>" with uidA < uidB (validated on create),
+    // so membership can be checked from the id without reading the document.
+    function isMatchMember(matchId) {
+      return signedIn() && request.auth.uid in matchId.split('_');
+    }
+
+    // True when `blocker` has blocked `target`.
+    function hasBlocked(blocker, target) {
+      return exists(docPath('blocks/' + blocker + '_' + target));
+    }
+
+    // Matches created before the status field existed count as active.
+    function matchIsActive(matchId) {
+      return get(docPath('matches/' + matchId)).data.get('status', 'active') == 'active';
+    }
+
+    // Current version of the terms of use / community rules.
+    function termsVersion() {
+      return 1;
+    }
+
+    // Moderators: custom claim set with the Admin SDK, never by the app.
+    function isAdmin() {
+      return signedIn() && request.auth.token.get('admin', false) == true;
+    }
+
+    // A JPEG (starts with bytes FF D8 FF) of at most maxBytes.
+    function validJpeg(value, maxBytes) {
+      return value is bytes
+        && value.size() >= 4
+        && value.size() <= maxBytes
+        && value.toHexString()[0:6].lower() == 'ffd8ff';
+    }
+
+    function blockedEitherWay(a, b) {
+      return hasBlocked(a, b) || hasBlocked(b, a);
+    }
+
+    function postPath(postId) {
+      return docPath('posts/' + postId);
+    }
+
+    function commentPath(postId, commentId) {
+      return docPath('posts/' + postId + '/comments/' + commentId);
+    }
+
+    function postAuthor(postId) {
+      return get(postPath(postId)).data.authorId;
+    }
+
+    // Must match ReportReason in lib/features/safety/safety.dart.
+    function reportReasons() {
+      return ['harassment', 'spam', 'inappropriate', 'fake', 'offensive',
+              'scam', 'other'];
+    }
+
+    // ---------- users/{uid}: public profiles ----------
+
+    // Optional inline photo: a JPEG (starts with bytes FF D8 FF) of at most
+    // 48 KiB. Must match ProfilePhoto.maxBytes in profile_photo.dart.
+    function validPhoto(photo) {
+      return photo is bytes
+        && photo.size() >= 4
+        && photo.size() <= 49152
+        && photo.toHexString()[0:6].lower() == 'ffd8ff';
+    }
+
+    function validProfile(data) {
+      return data.keys().hasAll(['name', 'bio', 'teach', 'learn', 'updatedAt'])
+        && data.keys().hasOnly(['name', 'bio', 'teach', 'learn', 'updatedAt', 'photo'])
+        && (!('photo' in data) || validPhoto(data.photo))
+        && data.name is string
+        && data.name.trim().size() > 0
+        && data.name.size() <= 40
+        && data.bio is string
+        && data.bio.size() <= 160
+        && validSkills(data.teach)
+        && validSkills(data.learn)
+        && data.updatedAt == request.time;
+    }
+
+    match /users/{uid} {
+      allow get: if signedIn();
+      // Bounded queries only, to limit scraping.
+      allow list: if signedIn() && request.query.limit <= 50;
+      // A profile can only be created together with (or after) the consent
+      // record: 18+ and acceptance of the community rules.
+      allow create: if isUser(uid)
+        && validProfile(request.resource.data)
+        && existsAfter(docPath('users/' + uid + '/private/consent'));
+      allow update: if isUser(uid) && validProfile(request.resource.data);
+      allow delete: if isUser(uid);
+
+      // ---------- users/{uid}/private/consent: owner only ----------
+      match /private/{docId} {
+        allow get: if isUser(uid) && docId == 'consent';
+        allow create: if isUser(uid)
+          && docId == 'consent'
+          && hasExactly(request.resource.data, ['termsVersion', 'adult', 'acceptedAt'])
+          && request.resource.data.termsVersion == termsVersion()
+          && request.resource.data.adult == true
+          && request.resource.data.acceptedAt == request.time;
+        allow list, update, delete: if false;
+      }
+
+      // ---------- users/{uid}/saved/{postId}: owner only ----------
+      match /saved/{postId} {
+        allow read: if isUser(uid);
+        allow create: if isUser(uid)
+          && hasExactly(request.resource.data, ['createdAt'])
+          && request.resource.data.createdAt == request.time
+          && exists(postPath(postId));
+        allow update: if false;
+        allow delete: if isUser(uid);
+      }
+
+      // ---------- users/{uid}/notifications/{id}: in-app notifications ----------
+      // Written by the person who acted, only for an event that really
+      // happened (checked below). Ids are deterministic, so the same event
+      // cannot notify twice.
+      match /notifications/{notificationId} {
+        allow read: if isUser(uid);
+        allow create: if signedIn()
+          && uid != request.auth.uid
+          && hasExactly(request.resource.data,
+               ['type', 'actorId', 'postId', 'commentId', 'read', 'createdAt'])
+          && request.resource.data.actorId == request.auth.uid
+          && request.resource.data.read == false
+          && request.resource.data.createdAt == request.time
+          && !blockedEitherWay(uid, request.auth.uid)
+          && validNotification(uid, notificationId, request.resource.data);
+        // The recipient can only mark it as read.
+        allow update: if isUser(uid)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read'])
+          && request.resource.data.read == true;
+        // The recipient dismisses it; the actor withdraws it (unlike, unfollow).
+        allow delete: if isUser(uid)
+          || (signedIn() && resource.data.actorId == request.auth.uid);
+      }
+    }
+
+    function validNotification(recipient, id, data) {
+      let me = request.auth.uid;
+      return (data.type == 'like'
+          && validId(data.postId)
+          && data.commentId == null
+          && id == 'like_' + data.postId + '_' + me
+          && postAuthor(data.postId) == recipient
+          && exists(docPath('posts/' + data.postId + '/likes/' + me)))
+        || (data.type == 'comment'
+          && validId(data.postId)
+          && validId(data.commentId)
+          && id == 'comment_' + data.commentId
+          && postAuthor(data.postId) == recipient
+          && get(commentPath(data.postId, data.commentId)).data.authorId == me
+          && get(commentPath(data.postId, data.commentId)).data.parentId == null)
+        || (data.type == 'reply'
+          && validId(data.postId)
+          && validId(data.commentId)
+          && id == 'reply_' + data.commentId
+          && get(commentPath(data.postId, data.commentId)).data.authorId == me
+          && get(commentPath(data.postId, data.commentId)).data.parentId is string
+          && get(commentPath(data.postId,
+               get(commentPath(data.postId, data.commentId)).data.parentId))
+               .data.authorId == recipient)
+        || (data.type == 'follow'
+          && data.postId == null
+          && data.commentId == null
+          && id == 'follow_' + me
+          && exists(docPath('follows/' + me + '_' + recipient)))
+        || (data.type == 'learn'
+          && data.commentId == null
+          && id == 'learn_' + me
+          && get(docPath('likes/' + me + '_' + recipient)).data.liked == true
+          && (data.postId == null
+              || (validId(data.postId) && postAuthor(data.postId) == recipient)));
+    }
+
+    // ---------- rateLimits/{uid}: anti-spam cooldowns ----------
+    // A post or comment is only accepted together with a write that moves
+    // the matching timestamp to now, which is refused inside the cooldown.
+
+    // The stamp also names the one post/comment it allows ([idKey]), so a
+    // single batch cannot carry several posts or comments.
+    function cooldownOk(key, idKey, seconds) {
+      return request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly([key, idKey, 'lastVideoAt'])
+        && request.resource.data[key] == request.time
+        && request.resource.data[idKey] is string
+        && (!(key in resource.data)
+            || resource.data[key] < request.time - duration.value(seconds, 's'));
+    }
+
+    // Videos (up to 2.4 MB each) are limited to one per hour per member, so
+    // a script cannot fill the Spark storage quota. The stamp is unchanged,
+    // or set to now when the previous one is older than an hour.
+    function videoStampOk() {
+      return request.resource.data.get('lastVideoAt', null)
+          == resource.data.get('lastVideoAt', null)
+        || (request.resource.data.get('lastVideoAt', null) == request.time
+            && (!('lastVideoAt' in resource.data)
+                || resource.data.lastVideoAt < request.time - duration.value(3600, 's')));
+    }
+
+    // Document ids referenced inside data (no "/", bounded).
+    function validId(value) {
+      return value is string && value.matches('^[A-Za-z0-9_]{1,80}$');
+    }
+
+    match /rateLimits/{uid} {
+      allow get: if isUser(uid);
+      allow create: if isUser(uid)
+        && (((hasExactly(request.resource.data, ['lastPostAt', 'lastPostId'])
+              || (hasExactly(request.resource.data, ['lastPostAt', 'lastPostId', 'lastVideoAt'])
+                  && request.resource.data.lastVideoAt == request.time))
+             && request.resource.data.lastPostAt == request.time
+             && request.resource.data.lastPostId is string)
+          || (hasExactly(request.resource.data, ['lastCommentAt', 'lastCommentKey'])
+             && request.resource.data.lastCommentAt == request.time
+             && request.resource.data.lastCommentKey is string));
+      // Must match CommunityLimits in lib/features/community/models.dart.
+      allow update: if isUser(uid)
+        && request.resource.data.keys()
+             .hasOnly(['lastPostAt', 'lastPostId', 'lastCommentAt', 'lastCommentKey',
+                       'lastVideoAt'])
+        && videoStampOk()
+        && (cooldownOk('lastPostAt', 'lastPostId', 30)
+            || cooldownOk('lastCommentAt', 'lastCommentKey', 3));
+      allow list, delete: if false;
+    }
+
+    // ---------- posts/{postId}: community feed (public to members) ----------
+
+    // Must match PostType in lib/features/community/models.dart.
+    function postTypes() {
+      return ['project', 'tip', 'knowledge', 'question', 'achievement', 'work'];
+    }
+
+    // Must match PostVideo in lib/features/community/post_video.dart: the
+    // MP4 is split into at most 3 chunks of 800 KiB (posts/{id}/video/{i});
+    // the post keeps one image, the poster frame.
+    function videoChunkBytes() {
+      return 819200;
+    }
+
+    function validVideo(video, mediaCount) {
+      return video is map
+        && video.keys().hasAll(['chunks', 'bytes', 'durationMs', 'width', 'height'])
+        && video.keys().hasOnly(['chunks', 'bytes', 'durationMs', 'width', 'height'])
+        && video.chunks is int
+        && video.chunks >= 1
+        && video.chunks <= 3
+        && video.bytes is int
+        && video.bytes >= 1
+        // Exactly as many chunks as the size needs.
+        && video.bytes <= video.chunks * videoChunkBytes()
+        && video.bytes > (video.chunks - 1) * videoChunkBytes()
+        && video.durationMs is int
+        && video.durationMs >= 1
+        && video.durationMs <= 60000
+        && video.width is int
+        && video.width >= 1
+        && video.width <= 4096
+        && video.height is int
+        && video.height >= 1
+        && video.height <= 4096
+        && mediaCount == 1;
+    }
+
+    // Every chunk but the last is full; the last holds the rest, so the
+    // chunks add up exactly to video.bytes.
+    function validChunkSize(index, size, video) {
+      return int(index) < video.get('chunks', 0)
+        && ((int(index) < video.chunks - 1 && size == videoChunkBytes())
+            || (int(index) == video.chunks - 1
+                && size == video.bytes - int(index) * videoChunkBytes()));
+    }
+
+    function allVideoWritten(postId, chunks) {
+      return existsAfter(docPath('posts/' + postId + '/video/0'))
+        && (chunks <= 1 || existsAfter(docPath('posts/' + postId + '/video/1')))
+        && (chunks <= 2 || existsAfter(docPath('posts/' + postId + '/video/2')));
+    }
+
+    // A video post is deleted together with all its chunks (no orphans).
+    function noVideoLeft(postId, chunks) {
+      return (chunks <= 0 || !existsAfter(docPath('posts/' + postId + '/video/0')))
+        && (chunks <= 1 || !existsAfter(docPath('posts/' + postId + '/video/1')))
+        && (chunks <= 2 || !existsAfter(docPath('posts/' + postId + '/video/2')));
+    }
+
+    function validRatio(value) {
+      return value is number && value > 0 && value < 10;
+    }
+
+    // Each element of the (at most 5) aspect ratios.
+    function validRatios(list) {
+      return (list.size() <= 0 || validRatio(list[0]))
+        && (list.size() <= 1 || validRatio(list[1]))
+        && (list.size() <= 2 || validRatio(list[2]))
+        && (list.size() <= 3 || validRatio(list[3]))
+        && (list.size() <= 4 || validRatio(list[4]));
+    }
+
+    // A post is deleted together with all its images (no orphans).
+    function noMediaLeft(postId, count) {
+      return (count <= 0 || !existsAfter(docPath('posts/' + postId + '/media/0')))
+        && (count <= 1 || !existsAfter(docPath('posts/' + postId + '/media/1')))
+        && (count <= 2 || !existsAfter(docPath('posts/' + postId + '/media/2')))
+        && (count <= 3 || !existsAfter(docPath('posts/' + postId + '/media/3')))
+        && (count <= 4 || !existsAfter(docPath('posts/' + postId + '/media/4')));
+    }
+
+    function validPost(data) {
+      return data.keys().hasAll(['authorId', 'description', 'type', 'skillIds',
+             'tags', 'keywords', 'visibility', 'mediaCount', 'aspectRatios',
+             'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['authorId', 'description', 'type', 'skillIds',
+             'tags', 'keywords', 'visibility', 'mediaCount', 'aspectRatios',
+             'createdAt', 'updatedAt', 'thumb', 'video'])
+        && data.authorId is string
+        && data.description is string
+        && data.description.size() <= 2000
+        && data.type in postTypes()
+        && validSkills(data.skillIds)
+        && data.skillIds.size() <= 5
+        && data.tags is list
+        && data.tags.size() <= 10
+        // join() also fails on non-string elements.
+        && data.tags.join(',').size() <= 330
+        && data.keywords is list
+        && data.keywords.size() <= 40
+        && data.keywords.join(',').size() <= 1300
+        // Followers-only needs a fan-out (Cloud Functions); see ADR 0005.
+        && data.visibility == 'public'
+        && data.mediaCount is int
+        && data.mediaCount >= 0
+        && data.mediaCount <= 5
+        && data.aspectRatios is list
+        && data.aspectRatios.size() == data.mediaCount
+        && validRatios(data.aspectRatios)
+        && (!('thumb' in data) || validJpeg(data.thumb, 24576))
+        && (!('video' in data) || validVideo(data.video, data.mediaCount))
+        // Never empty: some text or at least one image.
+        && (data.description.trim().size() > 0 || data.mediaCount > 0);
+    }
+
+    match /posts/{postId} {
+      allow get: if signedIn();
+      // No limit required: count() aggregations (posts per member) need it.
+      allow list: if signedIn();
+      allow create: if signedIn()
+        && validPost(request.resource.data)
+        && request.resource.data.authorId == request.auth.uid
+        && exists(docPath('users/' + request.auth.uid))
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.updatedAt == request.time
+        // Ids start with the author's uid, so a deleted post's id (and the
+        // likes, comments and links pointing to it) cannot be taken over.
+        && postId.matches(request.auth.uid + '_[A-Za-z0-9]{20}')
+        && getAfter(docPath('rateLimits/' + request.auth.uid))
+             .data.get('lastPostAt', null) == request.time
+        && getAfter(docPath('rateLimits/' + request.auth.uid))
+             .data.get('lastPostId', null) == postId
+        // A video post arrives with every chunk it declares, within the
+        // one-video-per-hour stamp.
+        && (!('video' in request.resource.data)
+            || (allVideoWritten(postId, request.resource.data.video.chunks)
+                && getAfter(docPath('rateLimits/' + request.auth.uid))
+                     .data.get('lastVideoAt', null) == request.time));
+      // Text, type, skills and tags are editable; images and author are not.
+      allow update: if signedIn()
+        && resource.data.authorId == request.auth.uid
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['description', 'type', 'skillIds', 'tags', 'keywords', 'updatedAt'])
+        && validPost(request.resource.data)
+        && request.resource.data.updatedAt == request.time
+        // Edits are pushed to every viewer: at most one every 5 s.
+        && request.time > resource.data.updatedAt + duration.value(5, 's');
+      allow delete: if signedIn()
+        && (resource.data.authorId == request.auth.uid || isAdmin())
+        && noMediaLeft(postId, resource.data.mediaCount)
+        && noVideoLeft(postId, resource.data.get('video', {}).get('chunks', 0));
+
+      // ---------- video chunks: created only in the post's own batch ----------
+      // Content is not parsed here (rules cannot slice bytes cheaply); the
+      // app checks the MP4 signature and total size before playing it.
+      // Chunks never outlive their post (create/delete rules), so reads
+      // need no extra exists() (it would double the reads per play).
+      match /video/{index} {
+        allow get: if signedIn();
+        allow list: if false;
+        allow create: if signedIn()
+          && index in ['0', '1', '2']
+          && hasExactly(request.resource.data, ['data'])
+          && request.resource.data.data is bytes
+          && request.resource.data.data.size() >= 1
+          && request.resource.data.data.size() <= videoChunkBytes()
+          && !exists(postPath(postId))
+          && getAfter(postPath(postId)).data.authorId == request.auth.uid
+          && validChunkSize(index, request.resource.data.data.size(),
+               getAfter(postPath(postId)).data.get('video', {}));
+        allow update: if false;
+        // Only together with the post (a lone deletion would break it).
+        allow delete: if (isAdmin()
+            || (signedIn() && postAuthor(postId) == request.auth.uid))
+          && !existsAfter(postPath(postId));
+      }
+
+      // ---------- images: created only in the post's own batch ----------
+      match /media/{index} {
+        allow get: if signedIn() && exists(postPath(postId));
+        allow list: if false;
+        // Must match PostImage limits in lib/features/community/post_media.dart.
+        allow create: if signedIn()
+          && index in ['0', '1', '2', '3', '4']
+          && hasExactly(request.resource.data, ['data', 'width', 'height'])
+          && validJpeg(request.resource.data.data, 307200)
+          && request.resource.data.width is int
+          && request.resource.data.width >= 1
+          && request.resource.data.width <= 1440
+          && request.resource.data.height is int
+          && request.resource.data.height >= 1
+          && request.resource.data.height <= 1440
+          // The post does not exist yet and is created by the same batch.
+          && !exists(postPath(postId))
+          && getAfter(postPath(postId)).data.authorId == request.auth.uid
+          && int(index) < getAfter(postPath(postId)).data.mediaCount;
+        allow update: if false;
+        // In a batch, get() sees the post before it is deleted. Only
+        // together with the post (a lone deletion would break it).
+        allow delete: if (isAdmin()
+            || (signedIn() && postAuthor(postId) == request.auth.uid))
+          && !existsAfter(postPath(postId));
+      }
+
+      // ---------- likes: one per member (doc id = uid) ----------
+      match /likes/{uid} {
+        allow read: if signedIn() && exists(postPath(postId));
+        allow create: if isUser(uid)
+          && hasExactly(request.resource.data, ['createdAt'])
+          && request.resource.data.createdAt == request.time
+          && exists(postPath(postId))
+          && !blockedEitherWay(postAuthor(postId), uid);
+        allow update: if false;
+        allow delete: if isUser(uid);
+      }
+
+      // ---------- comments: one reply level ----------
+      match /comments/{commentId} {
+        allow read: if signedIn() && exists(postPath(postId));
+        allow create: if signedIn()
+          && hasExactly(request.resource.data, ['authorId', 'text', 'parentId', 'createdAt'])
+          && request.resource.data.authorId == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.trim().size() > 0
+          && request.resource.data.text.size() <= 1000
+          && request.resource.data.createdAt == request.time
+          && exists(postPath(postId))
+          && !blockedEitherWay(postAuthor(postId), request.auth.uid)
+          && (request.resource.data.parentId == null
+              || (validId(request.resource.data.parentId)
+                  && get(commentPath(postId, request.resource.data.parentId))
+                       .data.parentId == null
+                  // Blocks also apply to the person being replied to.
+                  && !blockedEitherWay(
+                       get(commentPath(postId, request.resource.data.parentId)).data.authorId,
+                       request.auth.uid)))
+          && getAfter(docPath('rateLimits/' + request.auth.uid))
+               .data.get('lastCommentAt', null) == request.time
+          && getAfter(docPath('rateLimits/' + request.auth.uid))
+               .data.get('lastCommentKey', null) == postId + '_' + commentId;
+        allow update: if false;
+        // The comment's author, the post's author, the author of the comment
+        // it replies to (when deleting a thread) or a moderator.
+        allow delete: if signedIn()
+          && (resource.data.authorId == request.auth.uid
+              || isAdmin()
+              || postAuthor(postId) == request.auth.uid
+              || (resource.data.parentId is string
+                  && get(commentPath(postId, resource.data.parentId))
+                       .data.authorId == request.auth.uid));
+      }
+    }
+
+    // ---------- follows/{follower}_{following}: public to members ----------
+
+    match /follows/{followId} {
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && hasExactly(request.resource.data, ['followerId', 'followingId', 'createdAt'])
+        && request.resource.data.followerId == request.auth.uid
+        && request.resource.data.followingId is string
+        && request.resource.data.followingId != request.auth.uid
+        && followId == request.auth.uid + '_' + request.resource.data.followingId
+        && exists(docPath('users/' + request.resource.data.followingId))
+        && !blockedEitherWay(request.auth.uid, request.resource.data.followingId)
+        && request.resource.data.createdAt == request.time;
+      allow update: if false;
+      // Unfollow, or remove a follower (used when blocking).
+      allow delete: if signedIn() && request.auth.uid in followId.split('_');
+    }
+
+    // ---------- likes/{from}_{to}: private to the author ----------
+
+    match /likes/{likeId} {
+      // Only the author can read a like, so nobody learns who liked or
+      // skipped them. Mutual interest is checked by the match create rule.
+      allow get: if signedIn() && likeId.split('_')[0] == request.auth.uid;
+      allow list: if signedIn() && resource.data.from == request.auth.uid;
+      allow create, update: if signedIn()
+        && hasExactly(request.resource.data, ['from', 'to', 'liked', 'createdAt'])
+        && request.resource.data.from == request.auth.uid
+        && request.resource.data.to is string
+        && request.resource.data.to != request.auth.uid
+        && likeId == request.auth.uid + '_' + request.resource.data.to
+        && exists(docPath('users/' + request.resource.data.to))
+        && request.resource.data.liked is bool
+        && request.resource.data.createdAt == request.time;
+      allow delete: if false;
+    }
+
+    // ---------- matches/{uidA}_{uidB}: created only on mutual interest ----------
+
+    match /matches/{matchId} {
+      allow get: if isMatchMember(matchId);
+      allow list: if signedIn() && request.auth.uid in resource.data.userIds;
+
+      // A block in either direction prevents any match, forever.
+      allow create: if signedIn()
+        && hasExactly(request.resource.data,
+             ['userIds', 'status', 'lastMessage', 'lastMessageId', 'createdAt', 'lastMessageAt'])
+        && request.resource.data.userIds is list
+        && request.resource.data.userIds.size() == 2
+        && request.resource.data.userIds[0] < request.resource.data.userIds[1]
+        && request.auth.uid in request.resource.data.userIds
+        && matchId == request.resource.data.userIds[0] + '_' + request.resource.data.userIds[1]
+        && liked(request.resource.data.userIds[0], request.resource.data.userIds[1])
+        && liked(request.resource.data.userIds[1], request.resource.data.userIds[0])
+        && !hasBlocked(request.resource.data.userIds[0], request.resource.data.userIds[1])
+        && !hasBlocked(request.resource.data.userIds[1], request.resource.data.userIds[0])
+        && request.resource.data.status == 'active'
+        && request.resource.data.lastMessage == null
+        && request.resource.data.lastMessageId == null
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.lastMessageAt == request.time;
+
+      // Either member may close (unmatch) an active match. Closing is final.
+      allow update: if signedIn()
+        && request.auth.uid in resource.data.userIds
+        && resource.data.get('status', 'active') == 'active'
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['status', 'closedBy', 'closedAt'])
+        && request.resource.data.status == 'closed'
+        && request.resource.data.closedBy == request.auth.uid
+        && request.resource.data.closedAt == request.time;
+
+      // The preview may only mirror a message the caller creates in the same
+      // batch (getAfter sees the batch result, exists() the state before it).
+      allow update: if signedIn()
+        && request.auth.uid in resource.data.userIds
+        && resource.data.get('status', 'active') == 'active'
+        && request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['lastMessage', 'lastMessageId', 'lastMessageAt'])
+        && request.resource.data.lastMessageId is string
+        && !exists(docPath('matches/' + matchId + '/messages/' + request.resource.data.lastMessageId))
+        && getAfter(docPath('matches/' + matchId + '/messages/' + request.resource.data.lastMessageId))
+             .data.senderId == request.auth.uid
+        && getAfter(docPath('matches/' + matchId + '/messages/' + request.resource.data.lastMessageId))
+             .data.text == request.resource.data.lastMessage
+        && request.resource.data.lastMessageAt == request.time;
+      allow delete: if false;
+
+      // ---------- messages: members only, immutable ----------
+
+      match /messages/{messageId} {
+        allow read: if isMatchMember(matchId)
+          && request.auth.uid in get(docPath('matches/' + matchId)).data.userIds;
+        // No new messages once the match is closed (unmatch, block, report).
+        allow create: if isMatchMember(matchId)
+          && request.auth.uid in get(docPath('matches/' + matchId)).data.userIds
+          && matchIsActive(matchId)
+          && !hasBlocked(matchId.split('_')[0], request.auth.uid)
+          && !hasBlocked(matchId.split('_')[1], request.auth.uid)
+          && hasExactly(request.resource.data, ['senderId', 'text', 'createdAt'])
+          && request.resource.data.senderId == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 2000
+          && request.resource.data.createdAt == request.time;
+        allow update, delete: if false;
+      }
+    }
+
+    // ---------- blocks/{blocker}_{blocked}: private to the blocker ----------
+
+    match /blocks/{blockId} {
+      allow get: if signedIn() && blockId.split('_')[0] == request.auth.uid;
+      allow list: if signedIn() && resource.data.blocker == request.auth.uid;
+      allow create: if signedIn()
+        && hasExactly(request.resource.data, ['blocker', 'blocked', 'createdAt'])
+        && request.resource.data.blocker == request.auth.uid
+        && request.resource.data.blocked is string
+        && request.resource.data.blocked != request.auth.uid
+        && blockId == request.auth.uid + '_' + request.resource.data.blocked
+        && exists(docPath('users/' + request.resource.data.blocked))
+        && request.resource.data.createdAt == request.time;
+      // No unblock yet; a block cannot be edited or removed by clients.
+      allow update, delete: if false;
+    }
+
+    // ---------- reports: write-only for users, reviewed in the console ----------
+
+    function validReportBase(data) {
+      return data.reporterId == request.auth.uid
+        && data.reportedId is string
+        && data.reportedId != request.auth.uid
+        && data.reason in reportReasons()
+        && data.details is string
+        && data.details.size() <= 500
+        && data.createdAt == request.time;
+    }
+
+    // Report of a person (Discover, chat, profile).
+    function validPersonReport(data) {
+      return hasExactly(data,
+             ['reporterId', 'reportedId', 'reason', 'details', 'matchId', 'createdAt'])
+        && validReportBase(data)
+        && exists(docPath('users/' + data.reportedId))
+        && (data.matchId == null
+            || (data.matchId is string
+                && request.auth.uid in data.matchId.split('_')
+                && data.reportedId in data.matchId.split('_')));
+    }
+
+    // Report of community content; the reported person must be its author.
+    function validContentReport(data) {
+      return hasExactly(data, ['reporterId', 'reportedId', 'reason', 'details',
+             'targetType', 'postId', 'commentId', 'createdAt'])
+        && validReportBase(data)
+        && ((data.targetType == 'post'
+              && validId(data.postId)
+              && data.commentId == null
+              && postAuthor(data.postId) == data.reportedId)
+          || (data.targetType == 'comment'
+              && validId(data.postId)
+              && validId(data.commentId)
+              && get(commentPath(data.postId, data.commentId)).data.authorId
+                   == data.reportedId));
+    }
+
+    match /reports/{reportId} {
+      allow create: if signedIn()
+        && (validPersonReport(request.resource.data)
+            || validContentReport(request.resource.data));
+      // Moderators review in the console or with the Admin SDK.
+      allow read: if isAdmin();
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+        && request.resource.data.status in ['open', 'reviewed', 'dismissed'];
+      allow delete: if false;
+    }
+  }
+}

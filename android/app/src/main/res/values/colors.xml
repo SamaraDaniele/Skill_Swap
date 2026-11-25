@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand black; the native launch screen must match the Flutter splash. -->
+    <color name="splash_background">#000000</color>
+    <!-- Adaptive launcher icon background (same brand black). -->
+    <color name="ic_launcher_background">#000000</color>
+</resources>

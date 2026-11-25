@@ -1,0 +1,13 @@
+{
+  "name": "skill-swap-firestore-rules-test",
+  "private": true,
+  "description": "Security Rules tests for firestore.rules, run against the local Firestore Emulator.",
+  "type": "module",
+  "scripts": {
+    "test": "node --test --test-concurrency=1 rules.test.mjs community.test.mjs"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^6.0.0",
+    "firebase": "^13.4.0"
+  }
+}

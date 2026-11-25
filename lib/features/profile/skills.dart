@@ -1,0 +1,50 @@
+import '../../core/l10n/l10n.dart';
+
+abstract final class Skills {
+  static const List<String> all = [
+    'excel',
+    'english',
+    'spanish',
+    'programming',
+    'python',
+    'guitar',
+    'piano',
+    'math',
+    'physics',
+    'chemistry',
+    'photoEditing',
+    'videoEditing',
+    'cooking',
+    'crafts',
+    'drawing',
+    'writing',
+    'publicSpeaking',
+    'photography',
+    'design',
+    'marketing',
+  ];
+
+  static String label(AppLocalizations l10n, String id) => switch (id) {
+    'excel' => l10n.skillExcel,
+    'english' => l10n.skillEnglish,
+    'spanish' => l10n.skillSpanish,
+    'programming' => l10n.skillProgramming,
+    'python' => l10n.skillPython,
+    'guitar' => l10n.skillGuitar,
+    'piano' => l10n.skillPiano,
+    'math' => l10n.skillMath,
+    'physics' => l10n.skillPhysics,
+    'chemistry' => l10n.skillChemistry,
+    'photoEditing' => l10n.skillPhotoEditing,
+    'videoEditing' => l10n.skillVideoEditing,
+    'cooking' => l10n.skillCooking,
+    'crafts' => l10n.skillCrafts,
+    'drawing' => l10n.skillDrawing,
+    'writing' => l10n.skillWriting,
+    'publicSpeaking' => l10n.skillPublicSpeaking,
+    'photography' => l10n.skillPhotography,
+    'design' => l10n.skillDesign,
+    'marketing' => l10n.skillMarketing,
+    _ => id,
+  };
+}

@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "999761763802",
+    "project_id": "skill-suap",
+    "storage_bucket": "skill-suap.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:999761763802:android:a6086c34a4f8e873b6f4e3",
+        "android_client_info": {
+          "package_name": "com.skillsuap.skill_suap"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBijhMvrE9MNWl3zIz-VUSb8erZatUoy1s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:999761763802:android:afb7ad39cdcbd55ab6f4e3",
+        "android_client_info": {
+          "package_name": "com.skillswap.skill_swap"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBijhMvrE9MNWl3zIz-VUSb8erZatUoy1s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
